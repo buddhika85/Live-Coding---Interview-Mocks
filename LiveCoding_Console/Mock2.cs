@@ -1,6 +1,7 @@
 ﻿namespace LiveCoding_Console.Mock2;
 
 // 4:17 - 4:23
+// 4:30 - 4:34
 internal class Mock2
 {
     public Mock2()
@@ -14,27 +15,32 @@ internal class Mock2
             new Order { OrderId = 5, CustomerName = "Bob", Amount = 125.00m, Date = new DateTime(2023, 9, 6) }
         };
 
-        var list = GetCustomersSuymmary(orders);
+        var list = GetRecentCustomerSummary(orders);
     }
 
 
-    private List<CustomerSummary> GetCustomersSuymmary(List<Order> orders)
+    private List<CustomerSummary> GetRecentCustomerSummary(List<Order> orders)
     {
+        if (orders == null || !orders.Any()) return new List<CustomerSummary>();
+
         return (from order in orders
+                where (DateTime.Now - order.Date).Days <= 30
                 group order by order.CustomerName ?? "Unknown" into orderGroup
 
                 let totalSpent = Math.Round(orderGroup.Sum(x => x.Amount), 2)
                 let orderCount = orderGroup.Count()
                 let lastOrderDate = orderGroup.Max(x => x.Date)
+                let averageSpendPerOrder = Math.Round(orderGroup.Average(x => x.Amount), 2)
 
-                orderby totalSpent descending, orderCount descending, orderGroup.Key, lastOrderDate
+                orderby totalSpent descending, averageSpendPerOrder descending, orderCount descending, orderGroup.Key, lastOrderDate
 
                 select new CustomerSummary
                 {
                     Name = orderGroup.Key,
                     TotalSpent = totalSpent,
                     OrderCount = orderCount,
-                    LastOrderDate = lastOrderDate
+                    LastOrderDate = lastOrderDate,
+                    AverageSpendPerOrder = averageSpendPerOrder
                 }).ToList();
     }
 }
@@ -52,4 +58,6 @@ public class CustomerSummary
     public decimal TotalSpent { get; set; }
     public int OrderCount { get; set; }
     public DateTime LastOrderDate { get; set; }
+    public decimal AverageSpendPerOrder { get; set; }
+
 }
