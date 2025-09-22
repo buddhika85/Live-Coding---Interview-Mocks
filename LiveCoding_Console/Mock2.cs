@@ -2,6 +2,7 @@
 
 // 4:17 - 4:23
 // 4:30 - 4:34
+// 4:37 - 4:46
 internal class Mock2
 {
     public Mock2()
@@ -16,8 +17,33 @@ internal class Mock2
         };
 
         var list = GetRecentCustomerSummary(orders);
+        var breakdown = GetMonthlyCustomerSpendBreakdown(orders);
+
     }
 
+
+    private List<MonthlyCustomerSpend> GetMonthlyCustomerSpendBreakdown(List<Order> orders)
+    {
+        if (orders == null || !orders.Any()) return [];
+
+        return (from order in orders
+                group order by new { order.Date.Year, order.Date.Month, order.CustomerName } into orderGroup
+
+                let customerName = orderGroup.Key.CustomerName ?? "Unknown Customer"
+                let month = $"{orderGroup.Key.Year} - {orderGroup.Key.Month}"
+                let total = Math.Round(orderGroup.Sum(x => x.Amount), 2)
+                let orderCount = orderGroup.Count()
+
+
+                orderby total descending, orderCount descending, customerName
+                select new MonthlyCustomerSpend
+                {
+                    Month = month,
+                    CustomerName = customerName,
+                    TotalSpent = total,
+                    OrderCount = orderCount
+                }).ToList();
+    }
 
     private List<CustomerSummary> GetRecentCustomerSummary(List<Order> orders)
     {
@@ -43,6 +69,14 @@ internal class Mock2
                     AverageSpendPerOrder = averageSpendPerOrder
                 }).ToList();
     }
+}
+
+public class MonthlyCustomerSpend
+{
+    public string Month { get; set; }           // Format: "YYYY-MM"
+    public string CustomerName { get; set; }
+    public decimal TotalSpent { get; set; }
+    public int OrderCount { get; set; }
 }
 
 public class Order
