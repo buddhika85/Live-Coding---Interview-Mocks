@@ -1,4 +1,6 @@
-﻿namespace LiveCoding_Console.Mock3;
+﻿using System;
+
+namespace LiveCoding_Console.Mock3;
 
 internal class Mock3
 {
@@ -8,11 +10,21 @@ internal class Mock3
         {
             new Invoice { InvoiceId = 1, CustomerName = "Acme", Amount = 500.00m, Date = new DateTime(2023, 9, 1) },
             new Invoice { InvoiceId = 2, CustomerName = "Acme", Amount = 500.00m, Date = new DateTime(2023, 9, 5) },
-            new Invoice { InvoiceId = 3, CustomerName = "Acme", Amount = 500.00m, Date = new DateTime(2023, 9, 20) },
+            new Invoice { InvoiceId = 3, CustomerName = "Acme", Amount = 500.00m, Date = new DateTime(2023, 9, 8) },
+            new Invoice { InvoiceId = 3, CustomerName = "Acme", Amount = 500.00m, Date = new DateTime(2023, 9, 21) },
             new Invoice { InvoiceId = 4, CustomerName = "BetaCorp", Amount = 300.00m, Date = new DateTime(2023, 9, 2) },
             new Invoice { InvoiceId = 5, CustomerName = "BetaCorp", Amount = 300.00m, Date = new DateTime(2023, 9, 8) }
         };
         var duplicates = FilterDuplicates(invoices);
+        DisplayDuplicates(duplicates);
+
+        Console.WriteLine("\n\n");
+        duplicates = FilterDuplicatesFixed(invoices);
+        DisplayDuplicates(duplicates);
+    }
+
+    private static void DisplayDuplicates(List<DuplicateInvoiceGroup> duplicates)
+    {
         foreach (var item in duplicates)
         {
             Console.WriteLine(item);
@@ -31,10 +43,10 @@ internal class Mock3
 
                 let customerName = customerGroup.Key.CustomerName ?? "Unknown"
 
-                let allInvOfCustomer = customerGroup.OrderByDescending(x => x.Date)
+                let allInvOfCustomer = customerGroup.OrderBy(x => x.Date)
                 let firstInvoice = allInvOfCustomer.FirstOrDefault()
                 let firstInvoiceDate = firstInvoice.Date
-                let duplicatedInvoices = allInvOfCustomer.Where(x => (x.Date - firstInvoiceDate).Days <= 7)
+                let duplicatedInvoices = allInvOfCustomer.Where(x => (x.Date - firstInvoiceDate).TotalDays <= 7)
 
                 let amount = Math.Round(duplicatedInvoices.First().Amount, 2)
                 let invoiceIds = duplicatedInvoices.Select(x => x.InvoiceId).ToList()
@@ -46,6 +58,32 @@ internal class Mock3
                     CustomerName = customerName,
                     Amount = amount,
                     InvoiceIds = invoiceIds
+                }).ToList();
+    }
+
+
+    private List<DuplicateInvoiceGroup> FilterDuplicatesFixed(List<Invoice> invoices)
+    {
+        if (invoices == null || !invoices.Any())
+            return new List<DuplicateInvoiceGroup>();
+
+        return (from inv in invoices
+                group inv by new { inv.CustomerName, inv.Amount } into customerGroup
+                let sorted = customerGroup.OrderBy(x => x.Date).ToList()
+                let closeInvoices = sorted
+                    .SelectMany((x, i) => sorted.Skip(i + 1)
+                        .Where(y => (y.Date - x.Date).TotalDays <= 7))
+                    .Select(x => x.InvoiceId)
+                    .Distinct()
+                where closeInvoices.Any()
+                select new DuplicateInvoiceGroup
+                {
+                    CustomerName = customerGroup.Key.CustomerName,
+                    Amount = customerGroup.Key.Amount,
+                    InvoiceIds = customerGroup
+                        .Where(x => closeInvoices.Contains(x.InvoiceId))
+                        .Select(x => x.InvoiceId)
+                        .ToList()
                 }).ToList();
     }
 }
