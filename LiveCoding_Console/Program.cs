@@ -1,2 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using LiveCoding_Console.Mock3;
+
+Console.WriteLine("Hello - Live Coding Mock Interviews !");
+
+new Mock3();
