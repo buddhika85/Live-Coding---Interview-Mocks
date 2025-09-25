@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace LiveCoding_Console.Mock3;
+﻿namespace LiveCoding_Console.Mock3;
 
 internal class Mock3
 {
