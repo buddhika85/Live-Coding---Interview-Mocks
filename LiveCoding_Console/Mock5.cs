@@ -31,7 +31,8 @@ internal class Mock5
 
                 let amount = accGroup.FirstOrDefault()?.Amount ?? 0
 
-                let suspiciousIds = sorted.SelectMany((x, i) => sorted.Skip(i + 1).Where(y => (y.Timestamp - x.Timestamp).Minutes <= 2)).Select(x => x.TransactionId).Distinct()
+                // get suspicious transaction Ids with in group
+                let suspiciousIds = sorted.SelectMany((x, i) => sorted.Skip(i + 1).Where(y => (y.Timestamp - x.Timestamp).TotalMinutes <= 2)).Select(x => x.TransactionId).Distinct()
 
                 where suspiciousIds.Any()
 
