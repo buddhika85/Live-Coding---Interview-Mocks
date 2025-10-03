@@ -14,8 +14,10 @@ internal class Mock11
             new Order { OrderId = 5, CustomerId = 105, Region = "QLD", IsActive = true, OrderDate = new DateTime(2023, 9, 3) }
         };
 
-        List<RegionOrderSummary> summaries = await GetListOfSummaries(orders);
+        List<RegionOrderSummary> summaries = GetListOfSummaries(orders).Result;
     }
+
+
 
     private async Task<List<RegionOrderSummary>> GetListOfSummaries(List<Order> orders)
     {
@@ -24,28 +26,42 @@ internal class Mock11
 
         return await Task.Run(() =>
         {
-            return (from order in orders
-                    where order.IsActive
+            //return (from order in orders
+            //        where order.IsActive
 
-                    group order by order.Region into regionGroup
+            //        group order by order.Region into regionGroup
 
-                    let activeCount = regionGroup.Count(x => x.IsActive)
+            //        let activeCount = regionGroup.Count(x => x.IsActive)
 
-                    where activeCount >= 2
+            //        where activeCount >= 2
 
-                    let orderCount = regionGroup.Count()
-                    let earliestOrderDate = regionGroup.Min(x => x.OrderDate)
-                    let orderIds = regionGroup.OrderByDescending(x => x.OrderDate).Select(x => x.OrderId).ToList()
+            //        let orderCount = regionGroup.Count()
+            //        let earliestOrderDate = regionGroup.Min(x => x.OrderDate)
+            //        let orderIds = regionGroup.OrderByDescending(x => x.OrderDate).Select(x => x.OrderId).ToList()
 
-                    orderby regionGroup.Key, orderIds.Count() descending
+            //        orderby regionGroup.Key, orderIds.Count() descending
 
-                    select new RegionOrderSummary
+            //        select new RegionOrderSummary
+            //        {
+            //            Region = regionGroup.Key,
+            //            TotalOrders = orderCount,
+            //            EarliestOrderDate = earliestOrderDate,
+            //            OrderIds = orderIds
+            //        }).ToList();
+
+            return orders
+                    .Where(o => o.IsActive)
+                    .GroupBy(o => o.Region)
+                    .Where(g => g.Count() >= 2)
+                    .Select(g => new RegionOrderSummary
                     {
-                        Region = regionGroup.Key,
-                        TotalOrders = orderCount,
-                        EarliestOrderDate = earliestOrderDate,
-                        OrderIds = orderIds
-                    }).ToList();
+                        Region = g.Key,
+                        TotalOrders = g.Count(),
+                        EarliestOrderDate = g.Min(x => x.OrderDate),
+                        OrderIds = g.OrderBy(x => x.OrderDate).Select(x => x.OrderId).ToList()
+                    })
+                    .ToList();
+
         });
     }
 }
