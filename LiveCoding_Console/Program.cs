@@ -1,5 +1,5 @@
-﻿using LiveCoding_Console.Mock3;
+﻿using LiveCoding_Console;
 
 Console.WriteLine("Hello - Live Coding Mock Interviews !");
 
-new Mock3();
+new Mock12();
