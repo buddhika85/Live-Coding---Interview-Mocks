@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace LiveCoding_Console
+﻿namespace LiveCoding_Console
 {
     internal class _2_ReverseString
     {
