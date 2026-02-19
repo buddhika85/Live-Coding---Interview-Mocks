@@ -16,6 +16,7 @@ namespace LiveCoding_Console
             flattened?.DisplayAsString();
         }
 
-        public static IEnumerable<T> FlattenList<T>(IEnumerable<IEnumerable<T>> unflattned) => unflattned.SelectMany(x => x);
+        public static IEnumerable<T> FlattenList<T>(IEnumerable<IEnumerable<T>> unflattned) 
+            => unflattned.SelectMany(x => x);
     }
 }
