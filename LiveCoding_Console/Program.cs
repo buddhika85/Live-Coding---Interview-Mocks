@@ -9,4 +9,6 @@ Console.WriteLine("Hello - Live Coding Mock Interviews !");
 
 //_3_FirstNonRepeatingChar.Test();
 
-_6_FlattenNestedList.Test();
+//_6_FlattenNestedList.Test();
+
+_4_DevelopInMemoryCache.Test();
