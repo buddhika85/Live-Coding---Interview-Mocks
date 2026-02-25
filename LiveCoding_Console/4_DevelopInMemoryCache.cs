@@ -1,4 +1,5 @@
-﻿using static System.Console;
+﻿using System.Collections.Concurrent;
+using static System.Console;
 
 namespace LiveCoding_Console
 {
@@ -30,6 +31,9 @@ namespace LiveCoding_Console
     }
 
     public record Customer(string Name, int Age);
+
+
+    #region origin_implementation
 
     // implemenation 
     public record CachedValue<T>(T ValueCached, DateTime CachedTime, int CacheTimeInSeconds = 60);
@@ -74,4 +78,46 @@ namespace LiveCoding_Console
             return default(T);
         }
     }
+
+
+    #endregion origin_implementation
+
+
+    #region improved_implemenation
+
+    public record CachValue<T>(T Value, DateTime CachedAt, int TtlSeconds);
+
+    public static class InMemoryCache<T>
+    {
+        // •	ConcurrentDictionary → thread safe
+        // •	StringComparer.OrdinalIgnoreCase → no need to lowercase keys
+        private static readonly ConcurrentDictionary<string, CachValue<T>> _cache =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        public static void Set(string key, T value, int ttlSeconds = 60)
+        {
+            _cache[key] = new CachValue<T>(value, DateTime.UtcNow, ttlSeconds);
+        }
+
+        public static T? Get(string key)
+        {
+            if (_cache.TryGetValue(key, out var entry))
+            {
+                var age = DateTime.UtcNow - entry.CachedAt;
+
+                if (age.TotalSeconds < entry.TtlSeconds)
+                    return entry.Value;
+
+                _cache.TryRemove(key, out _);
+            }
+
+            return default;
+        }
+
+        public static void Remove(string key)
+        {
+            _cache.TryRemove(key, out _);
+        }
+    }
+    #endregion improved_implemenation
 }
